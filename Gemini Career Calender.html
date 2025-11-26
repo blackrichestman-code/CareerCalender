@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Engineer Launchpad Planner</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .check-anim { transition: all 0.2s ease; }
+        .check-anim:active { transform: scale(0.9); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- DATA: The 7-Month Timeline ---
+        const timelineData = {
+            "2025-11": { // December 2025 (Month Index 11 in JS)
+                phase: "Phase 1: Foundation",
+                focus: "Remote Tools & Branding",
+                color: "indigo",
+                tasks: {
+                    default: ["Study: Legal Tech (Clio/Zapier) - 1 hr", "Engage: Comment on 2 LinkedIn posts"],
+                    special: {
+                        1: { title: "Kickoff", tasks: ["Watch Clio Academy Intro", "Setup Asana/Trello Board"] },
+                        5: { title: "LinkedIn Revamp", tasks: ["Rewrite Headline: Legal Ops Specialist", "Update Banner Image"] },
+                        10: { title: "Zapier Basics", tasks: ["Create 1st Zap: Gmail to Sheets", "Watch Zapier University 101"] },
+                        15: { title: "Content Day 📢", tasks: ["Post 1 (LinkedIn): 'I'm Pivoting...'", "Draft Twitter Thread"] },
+                        20: { title: "Twitter Setup", tasks: ["Create Profile @LegalEngineer", "Follow Top 20 Legal Tech accounts"] },
+                        25: { title: "Content Day 📢", tasks: ["Post 2 (Twitter): Screenshot of Zapier workflow"] },
+                        30: { title: "Month Review", tasks: ["Review Clio features", "Plan Jan Content"] }
+                    }
+                }
+            },
+            "2026-0": { // January 2026
+                phase: "Phase 1: Foundation",
+                focus: "The Paralegal Side + Intro to AI",
+                color: "indigo",
+                tasks: {
+                    default: ["Study: CLM & OpenAI API - 1 hr", "Build: Intake Automator Project"],
+                    special: {
+                        5: { title: "CLM Basics", tasks: ["Study Contract Lifecycle Stages", "Map out a contract workflow"] },
+                        10: { title: "AI Playground", tasks: ["Get OpenAI API Key", "Test prompts in Playground"] },
+                        15: { title: "Project Start", tasks: ["Design Typeform for Client Intake", "Connect Typeform to Google Docs"] },
+                        20: { title: "Content Day 📢", tasks: ["Post 1 (Video): Screen record Typeform demo"] },
+                        25: { title: "Project Polish", tasks: ["Test PDF Generation", "Fix formatting issues"] },
+                        28: { title: "Content Day 📢", tasks: ["Post 2 (Insight): 'Why firms fail at intake'"] }
+                    }
+                }
+            },
+            "2026-1": { // February 2026
+                phase: "Phase 2: The Builder",
+                focus: "Advanced Automation (Make.com/Airtable)",
+                color: "fuchsia",
+                tasks: {
+                    default: ["Build: Case Tracker - 1 hr", "Study: Make.com logic"],
+                    special: {
+                        1: { title: "Make.com Deep Dive", tasks: ["Learn Routers & Filters", "Build a multi-step scenario"] },
+                        10: { title: "Airtable Setup", tasks: ["Create Case Management Base", "Define fields (Client, Status, Date)"] },
+                        15: { title: "Content Day 📢", tasks: ["Post 1 (Visual): Screenshot of Make.com spaghetti"] },
+                        20: { title: "Automation Logic", tasks: ["Link Airtable Status to Email trigger"] },
+                        25: { title: "Content Day 📢", tasks: ["Post 2 (Twitter): 'Excel is dead for legal'"] }
+                    }
+                }
+            },
+            "2026-2": { // March 2026
+                phase: "Phase 2: The Builder",
+                focus: "AI Integration (NDA Generator)",
+                color: "fuchsia",
+                tasks: {
+                    default: ["Build: NDA Generator - 1 hr", "Study: Prompt Engineering"],
+                    special: {
+                        5: { title: "Prompt Engineering", tasks: ["Practice 'Act as Defense Attorney' prompts"] },
+                        10: { title: "Softr Basics", tasks: ["Connect Airtable to Softr", "Build Client Portal UI"] },
+                        15: { title: "Project Start", tasks: ["Build NDA Generator Logic", "Test OpenAI text generation"] },
+                        20: { title: "Content Day 📢", tasks: ["Post 1 (Launch): Share NDA Generator link"] },
+                        25: { title: "Tech Deep Dive", tasks: ["Write breakdown of how the tool works"] },
+                        30: { title: "Content Day 📢", tasks: ["Post 3 (LinkedIn): 'NDA in 12 seconds'"] }
+                    }
+                }
+            },
+            "2026-3": { // April 2026
+                phase: "Phase 3: The Authority",
+                focus: "GRC & Privacy (The Safety Layer)",
+                color: "cyan",
+                tasks: {
+                    default: ["Audit: Review previous projects - 1 hr", "Study: GDPR/Security"],
+                    special: {
+                        5: { title: "GRC Basics", tasks: ["Study Data Minimization principles", "Review GDPR checklist"] },
+                        10: { title: "Security Audit", tasks: ["Secure API Keys", "Enable 2FA on all accounts"] },
+                        15: { title: "Project Update", tasks: ["Add Privacy Policy to Softr app", "Add Cookie Banner"] },
+                        20: { title: "Content Day 📢", tasks: ["Post 1 (LinkedIn): 'Is your automation compliant?'"] },
+                        25: { title: "Credibility", tasks: ["Post 3: 'Data Privacy Fundamentals' takeaways"] }
+                    }
+                }
+            },
+            "2026-4": { // May 2026
+                phase: "Phase 3: The Authority",
+                focus: "Freelance Strategy & Outreach",
+                color: "cyan",
+                tasks: {
+                    default: ["Outreach: Find leads - 1 hr", "Polish: Upwork Profile"],
+                    special: {
+                        1: { title: "Sales Prep", tasks: ["Draft Cold Email templates", "Setup Loom for recording"] },
+                        10: { title: "Lead Gen", tasks: ["Identify 20 Immigration/Family Law firms"] },
+                        15: { title: "Outreach Sprint", tasks: ["Record 5 Loom audits", "Send 5 cold emails"] },
+                        20: { title: "Upwork Optimize", tasks: ["Update profile to 'Legal Automation Expert'", "Upload Portfolio items"] },
+                        25: { title: "Content Day 📢", tasks: ["Post 1: 'Opening 3 spots for audits'"] },
+                        30: { title: "Content Day 📢", tasks: ["Post 2: Case Study breakdown"] }
+                    }
+                }
+            },
+            "2026-5": { // June 2026
+                phase: "Phase 3: The Authority",
+                focus: "Closing Clients & Retainers",
+                color: "cyan",
+                tasks: {
+                    default: ["Sales: Pitching Retainers", "Work: Client Deliverables"],
+                    special: {
+                        1: { title: "Retainer Design", tasks: ["Create '$500/mo Maintenance' PDF", "Setup Stripe invoice"] },
+                        10: { title: "Apply Sprint", tasks: ["Apply to 5 Legal Ops jobs", "Follow up on cold emails"] },
+                        15: { title: "Content Day 📢", tasks: ["Post 1: 'Signed first client!' (Manifest it)"] },
+                        25: { title: "Final Review", tasks: ["Review 7-month roadmap", "Plan next 6 months"] },
+                        30: { title: "Celebration", tasks: ["Post 2: 'From Lawyer to Engineer - The Roadmap'"] }
+                    }
+                }
+            }
+        };
+
+        const App = () => {
+            // State
+            const [currentDate, setCurrentDate] = useState(new Date(2025, 11, 1)); // Start Dec 2025
+            const [selectedDay, setSelectedDay] = useState(null);
+            const [completedTasks, setCompletedTasks] = useState({});
+
+            // Load from LocalStorage
+            useEffect(() => {
+                const saved = localStorage.getItem("legalEngineerTasks");
+                if (saved) setCompletedTasks(JSON.parse(saved));
+            }, []);
+
+            // Save to LocalStorage
+            useEffect(() => {
+                localStorage.setItem("legalEngineerTasks", JSON.stringify(completedTasks));
+            }, [completedTasks]);
+
+            // Calendar Logic
+            const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+            const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+            
+            const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+            const currentData = timelineData[monthKey] || { phase: "Planning", focus: "General Prep", color: "slate", tasks: { default: [], special: {} } };
+
+            // Colors
+            const colorMap = {
+                indigo: "bg-indigo-600",
+                fuchsia: "bg-fuchsia-600",
+                cyan: "bg-cyan-600",
+                slate: "bg-slate-600"
+            };
+            const themeColor = colorMap[currentData.color] || "bg-slate-600";
+            const textColor = currentData.color === "indigo" ? "text-indigo-400" : currentData.color === "fuchsia" ? "text-fuchsia-400" : "text-cyan-400";
+            const borderColor = currentData.color === "indigo" ? "border-indigo-500/30" : currentData.color === "fuchsia" ? "border-fuchsia-500/30" : "border-cyan-500/30";
+
+            // Handlers
+            const handlePrevMonth = () => {
+                const newDate = new Date(currentDate);
+                newDate.setMonth(newDate.getMonth() - 1);
+                setCurrentDate(newDate);
+                setSelectedDay(null);
+            };
+
+            const handleNextMonth = () => {
+                const newDate = new Date(currentDate);
+                newDate.setMonth(newDate.getMonth() + 1);
+                setCurrentDate(newDate);
+                setSelectedDay(null);
+            };
+
+            const toggleTask = (taskId) => {
+                setCompletedTasks(prev => ({
+                    ...prev,
+                    [taskId]: !prev[taskId]
+                }));
+            };
+
+            const getDayTasks = (day) => {
+                if (!day) return [];
+                const specific = currentData.tasks.special[day];
+                const baseTasks = currentData.tasks.default.map((t, i) => ({
+                    id: `${monthKey}-${day}-def-${i}`,
+                    text: t,
+                    isSpecial: false
+                }));
+                
+                if (specific) {
+                    const specialTasks = specific.tasks.map((t, i) => ({
+                        id: `${monthKey}-${day}-spec-${i}`,
+                        text: t,
+                        isSpecial: true,
+                        title: specific.title
+                    }));
+                    return [...specialTasks, ...baseTasks];
+                }
+                return baseTasks;
+            };
+
+            // Grid Generation
+            const calendarGrid = [];
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                calendarGrid.push(<div key={`empty-${i}`} className="h-24 md:h-32 bg-slate-900/30 border-r border-b border-slate-800"></div>);
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const hasSpecial = currentData.tasks.special[day];
+                const dayTasks = getDayTasks(day);
+                const completedCount = dayTasks.filter(t => completedTasks[t.id]).length;
+                const totalCount = dayTasks.length;
+                const isComplete = totalCount > 0 && completedCount === totalCount;
+
+                calendarGrid.push(
+                    <div 
+                        key={day} 
+                        onClick={() => setSelectedDay(day)}
+                        className={`h-24 md:h-32 border-r border-b border-slate-800 p-2 cursor-pointer transition-colors hover:bg-white/5 relative
+                            ${selectedDay === day ? 'bg-white/10 ring-1 ring-inset ring-white/20' : ''}
+                            ${isComplete ? 'bg-green-900/10' : ''}
+                        `}
+                    >
+                        <div className="flex justify-between items-start">
+                            <span className={`font-semibold text-sm ${isComplete ? 'text-green-400' : 'text-slate-400'}`}>{day}</span>
+                            {isComplete && <i className="fas fa-check-circle text-green-500 text-xs"></i>}
+                        </div>
+                        
+                        {hasSpecial && (
+                            <div className={`mt-2 text-xs p-1 rounded font-medium truncate
+                                ${hasSpecial.title.includes("Content") ? 'bg-yellow-500/20 text-yellow-200' : 
+                                  hasSpecial.title.includes("Project") ? 'bg-emerald-500/20 text-emerald-200' : 
+                                  'bg-blue-500/20 text-blue-200'}
+                            `}>
+                                {hasSpecial.title.includes("Content") && <i className="fas fa-bullhorn mr-1"></i>}
+                                {hasSpecial.title}
+                            </div>
+                        )}
+                        
+                        <div className="absolute bottom-2 right-2">
+                             <div className="w-12 h-1 bg-slate-700 rounded-full overflow-hidden">
+                                <div 
+                                    className={`h-full ${isComplete ? 'bg-green-500' : themeColor}`} 
+                                    style={{ width: `${(completedCount / totalCount) * 100}%` }}
+                                ></div>
+                             </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen flex flex-col md:flex-row max-w-7xl mx-auto p-4 gap-6">
+                    
+                    {/* LEFT PANEL: Navigation & Grid */}
+                    <div className="flex-1 flex flex-col gap-4">
+                        {/* Header Card */}
+                        <div className={`glass-panel p-6 rounded-2xl border-l-4 ${themeColor.replace('bg-', 'border-')}`}>
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <h2 className={`text-sm font-bold uppercase tracking-wider mb-1 ${textColor}`}>{currentData.phase}</h2>
+                                    <h1 className="text-3xl font-bold">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h1>
+                                    <p className="text-slate-400 mt-1">Focus: <span className="text-white font-medium">{currentData.focus}</span></p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={handlePrevMonth} className="p-2 w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 transition"><i className="fas fa-chevron-left"></i></button>
+                                    <button onClick={handleNextMonth} className="p-2 w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 transition"><i className="fas fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            
+                            {/* Stats */}
+                            <div className="flex gap-6 text-sm text-slate-400 border-t border-white/5 pt-4">
+                                <div><i className="fas fa-calendar-check mr-2 text-emerald-400"></i> {Object.keys(currentData.tasks.special).length} Key Milestones</div>
+                                <div><i className="fas fa-bullhorn mr-2 text-yellow-400"></i> {Object.values(currentData.tasks.special).filter(t => t.title.includes("Content")).length} Content Posts</div>
+                            </div>
+                        </div>
+
+                        {/* Calendar Grid */}
+                        <div className="glass-panel rounded-2xl overflow-hidden shadow-2xl">
+                            <div className="grid grid-cols-7 bg-slate-900/50 border-b border-slate-800">
+                                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                                    <div key={d} className="py-2 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">{d}</div>
+                                ))}
+                            </div>
+                            <div className="grid grid-cols-7">
+                                {calendarGrid}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RIGHT PANEL: Tasks & Details */}
+                    <div className="w-full md:w-96 flex flex-col gap-4">
+                        {/* Active Day Card */}
+                        <div className="glass-panel rounded-2xl p-6 flex-1 flex flex-col h-[600px]">
+                            {selectedDay ? (
+                                <>
+                                    <div className="flex justify-between items-center mb-6">
+                                        <div>
+                                            <h3 className="text-2xl font-bold">
+                                                {currentDate.toLocaleString('default', { month: 'short' })} {selectedDay}
+                                            </h3>
+                                            <p className="text-slate-400 text-sm">Daily Action Plan</p>
+                                        </div>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${themeColor}`}>
+                                            {selectedDay}
+                                        </div>
+                                    </div>
+
+                                    {/* Task List */}
+                                    <div className="space-y-3 overflow-y-auto scrollbar-hide flex-1">
+                                        {getDayTasks(selectedDay).map((task) => (
+                                            <div 
+                                                key={task.id} 
+                                                onClick={() => toggleTask(task.id)}
+                                                className={`p-4 rounded-xl border cursor-pointer check-anim group transition-all
+                                                    ${completedTasks[task.id] 
+                                                        ? 'bg-green-900/20 border-green-500/30' 
+                                                        : 'bg-slate-800/50 border-white/5 hover:border-white/20 hover:bg-slate-800'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className={`mt-1 w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors
+                                                        ${completedTasks[task.id] ? 'bg-green-500 border-green-500' : 'border-slate-500 group-hover:border-white'}
+                                                    `}>
+                                                        {completedTasks[task.id] && <i className="fas fa-check text-xs text-black"></i>}
+                                                    </div>
+                                                    <div>
+                                                        {task.isSpecial && (
+                                                            <div className="text-xs font-bold uppercase tracking-wide mb-1 text-slate-400">
+                                                                {task.title}
+                                                            </div>
+                                                        )}
+                                                        <p className={`text-sm ${completedTasks[task.id] ? 'text-slate-500 line-through' : 'text-slate-200'}`}>
+                                                            {task.text}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="mt-6 pt-4 border-t border-white/10 text-center">
+                                        <p className="text-xs text-slate-500">Progress is saved automatically to this browser.</p>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 opacity-60">
+                                    <i className="fas fa-calendar-alt text-6xl mb-4"></i>
+                                    <p className="text-lg">Select a day to view tasks</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Quick Legend */}
+                        <div className="glass-panel rounded-2xl p-4">
+                            <h4 className="text-xs font-bold uppercase text-slate-500 mb-3">Legend</h4>
+                            <div className="flex flex-wrap gap-2 text-xs">
+                                <span className="px-2 py-1 rounded bg-yellow-500/20 text-yellow-200 border border-yellow-500/30">📢 Content</span>
+                                <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-500/30">🛠️ Project</span>
+                                <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-200 border border-blue-500/30">📚 Study</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
